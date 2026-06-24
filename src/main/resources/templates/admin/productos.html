@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Inventario</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <header class="topbar">
+        <h1>Inventario (Administrador)</h1>
+        <a class="btn" th:href="@{/admin/pedidos}">Ver pedidos</a>
+    </header>
+    <!-- TODO: agregar formulario para crear producto nuevo y botones de editar -->
+    <table class="tabla">
+        <thead><tr><th>Id</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Activo</th></tr></thead>
+        <tbody>
+            <tr th:each="p : ${productos}">
+                <td th:text="${p.id}">1</td>
+                <td th:text="${p.nombre}">Nombre</td>
+                <td th:text="'$' + ${p.precio}">$0</td>
+                <td th:text="${p.stock}">0</td>
+                <td th:text="${p.activo}">true</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

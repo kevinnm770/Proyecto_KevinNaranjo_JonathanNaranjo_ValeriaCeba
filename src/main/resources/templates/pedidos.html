@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis pedidos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <header class="topbar">
+        <h1>Mis pedidos</h1>
+        <a class="btn" th:href="@{/catalogo}">Volver al catalogo</a>
+    </header>
+    <!-- TODO: recorrer ${pedidos} mostrando id, estado, total y fecha -->
+    <table class="tabla">
+        <thead><tr><th># Pedido</th><th>Estado</th><th>Total</th><th>Fecha</th></tr></thead>
+        <tbody>
+            <tr th:each="ped : ${pedidos}">
+                <td th:text="${ped.id}">1</td>
+                <td th:text="${ped.estado}">NUEVO</td>
+                <td th:text="'$' + ${ped.total}">$0</td>
+                <td th:text="${ped.createdAt}">fecha</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

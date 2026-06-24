@@ -1,0 +1,48 @@
+{
+  "info": {
+    "name": "TecnoTienda - API Pedidos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [ { "key": "baseUrl", "value": "http://localhost:8080" } ],
+  "item": [
+    {
+      "name": "Listar productos",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/productos" }
+    },
+    {
+      "name": "Obtener producto por id",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/productos/1" }
+    },
+    {
+      "name": "Crear producto",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Fuente de poder 650W\",\n  \"descripcion\": \"80 Plus Bronze\",\n  \"precio\": 60.00,\n  \"stock\": 10\n}" },
+        "url": "{{baseUrl}}/api/v1/productos"
+      }
+    },
+    {
+      "name": "Actualizar producto (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"precio\": 55.00,\n  \"stock\": 25\n}" },
+        "url": "{{baseUrl}}/api/v1/productos/1"
+      }
+    },
+    {
+      "name": "Listar pedidos",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/pedidos" }
+    },
+    {
+      "name": "Cambiar estado de pedido (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"estado\": \"EN_PREPARACION\"\n}" },
+        "url": "{{baseUrl}}/api/v1/pedidos/1"
+      }
+    }
+  ]
+}

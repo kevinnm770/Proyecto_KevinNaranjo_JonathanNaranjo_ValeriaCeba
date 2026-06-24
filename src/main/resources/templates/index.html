@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>TecnoTienda - Inicio</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>TecnoTienda</h1>
+    <p>Tienda de componentes electronicos y hardware.</p>
+    <p th:if="${param.logout}" class="ok">Sesion cerrada correctamente.</p>
+    <nav>
+        <a class="btn" th:href="@{/login}">Iniciar sesion</a>
+        <a class="btn" th:href="@{/registro}">Registrarme</a>
+    </nav>
+    <!-- TODO: mejorar esta pagina de bienvenida -->
+</div>
+</body>
+</html>

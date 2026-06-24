@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>Crear cuenta de cliente</h1>
+    <!-- TODO: conectar este formulario con un POST a /registro en HomeController
+         y guardar el usuario con usuarioService.registrarCliente(...) -->
+    <form class="form" method="post" th:action="@{/registro}">
+        <label>Usuario</label>      <input type="text" name="username" required/>
+        <label>Contrasena</label>   <input type="password" name="password" required/>
+        <label>Nombre completo</label> <input type="text" name="nombre"/>
+        <label>Email</label>        <input type="email" name="email"/>
+        <button type="submit" class="btn">Registrarme</button>
+    </form>
+    <a th:href="@{/login}">Ya tengo cuenta</a>
+</div>
+</body>
+</html>

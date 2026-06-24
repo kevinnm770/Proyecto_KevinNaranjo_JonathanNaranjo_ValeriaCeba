@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Pedidos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <header class="topbar">
+        <h1>Pedidos (Administrador)</h1>
+        <a class="btn" th:href="@{/admin/productos}">Ver inventario</a>
+    </header>
+    <!-- TODO: por cada pedido permitir cambiar el estado (NUEVO -> EN_PREPARACION -> ENTREGADO) -->
+    <table class="tabla">
+        <thead><tr><th># Pedido</th><th>Cliente</th><th>Estado</th><th>Total</th></tr></thead>
+        <tbody>
+            <tr th:each="ped : ${pedidos}">
+                <td th:text="${ped.id}">1</td>
+                <td th:text="${ped.usuarioId}">1</td>
+                <td th:text="${ped.estado}">NUEVO</td>
+                <td th:text="'$' + ${ped.total}">$0</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

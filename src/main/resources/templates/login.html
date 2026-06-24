@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesion</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>Iniciar sesion</h1>
+    <p th:if="${param.error}" class="error">Usuario o contrasena incorrectos.</p>
+
+    <!-- Spring Security recibe este formulario en /login (POST) automaticamente -->
+    <form th:action="@{/login}" method="post" class="form">
+        <label>Usuario</label>
+        <input type="text" name="username" required/>
+        <label>Contrasena</label>
+        <input type="password" name="password" required/>
+        <button type="submit" class="btn">Entrar</button>
+    </form>
+    <p>Usuarios de prueba: <strong>admin/admin123</strong> o <strong>cliente/cliente123</strong></p>
+    <a th:href="@{/}">Volver al inicio</a>
+</div>
+</body>
+</html>

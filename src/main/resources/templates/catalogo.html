@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalogo</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="container">
+    <header class="topbar">
+        <h1>Catálogo de productos</h1>
+        <div>
+            <a class="btn" th:href="@{/pedidos}">Mis pedidos</a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <button class="btn" type="submit">Salir</button>
+            </form>
+        </div>
+    </header>
+
+    <table class="tabla">
+        <thead>
+            <tr><th>Producto</th><th>Descripcion</th><th>Precio</th><th>Stock</th><th></th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${productos}">
+                <td th:text="${p.nombre}">Nombre</td>
+                <td th:text="${p.descripcion}">Descripcion</td>
+                <td th:text="'$' + ${p.precio}">$0</td>
+                <td th:text="${p.stock}">0</td>
+                <td>
+                    <!-- TODO: este boton debe agregar el producto a un pedido -->
+                    <form th:action="@{/pedidos}" method="post" style="display:inline">
+                        <input type="hidden" name="productoId" th:value="${p.id}"/>
+                        <button class="btn" type="submit">Pedir</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(productos)}">
+                <td colspan="5">No hay productos en el catálogo.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
