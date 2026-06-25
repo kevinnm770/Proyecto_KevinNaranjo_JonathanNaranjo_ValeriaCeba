@@ -3,36 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <title>Mis pedidos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .site-header { background:#1f3a5f; color:#fff; padding:14px 28px; display:flex;
+            justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+        .site-header .marca { font-size:24px; font-weight:bold; letter-spacing:.5px; }
+        .site-header .marca span { color:#7fb2e6; }
+        .site-header .btn { background:#294e80; }
+        .contenido { max-width:1100px; margin:24px auto; padding:0 16px; }
+        .tabla-wrap { overflow-x:auto; }
+        .btn-sm { padding:6px 10px; font-size:13px; }
+        .acciones { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    </style>
 </head>
 <body>
-<div class="container">
-    <header class="topbar">
-        <h1>Mis pedidos</h1>
-        <a class="btn" th:href="@{/catalogo}">Volver al catalogo</a>
-    </header>
 
-    <table class="tabla">
-        <thead>
-        <tr>
-            <th># Pedido</th>
-            <th>Estado</th>
-            <th>Total</th>
-            <th>Fecha</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="ped : ${pedidos}">
-            <td th:text="${ped.id}">1</td>
-            <td th:text="${ped.estado}">NUEVO</td>
-            <td th:text="'$' + ${ped.total}">$0</td>
-            <td th:text="${#temporals.format(ped.createdAt, 'dd/MM/yyyy HH:mm')}">fecha</td>
-        </tr>
-        <tr th:if="${#lists.isEmpty(pedidos)}">
-            <td colspan="4">No tienes pedidos aún.</td>
-        </tr>
-        </tbody>
-    </table>
+<header class="site-header">
+    <div class="marca">Tecno<span>All</span></div>
+    <nav style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" th:href="@{/catalogo}">Catálogo</a>
+        <a class="btn" th:href="@{/pedidos}">Mis pedidos</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button class="btn" type="submit">Salir</button>
+        </form>
+    </nav>
+</header>
+
+<div class="contenido">
+    <h1>Mis pedidos</h1>
+
+    <div class="tabla-wrap">
+        <table class="tabla">
+            <thead>
+            <tr><th># Pedido</th><th>Producto</th><th>Cantidad</th><th>Total</th>
+                <th>Estado</th><th>Fecha</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="ped : ${pedidos}">
+                <td th:text="${ped.id}">1</td>
+                <td>
+                        <span th:if="${not #lists.isEmpty(ped.detalles)}"
+                              th:text="${productosMap.get(ped.detalles[0].productoId)}">Producto</span>
+                </td>
+                <td>
+                    <!-- Editable solo si el pedido esta NUEVO -->
+                    <form th:if="${ped.estado.name() == 'NUEVO' and not #lists.isEmpty(ped.detalles)}"
+                          th:action="@{'/pedidos/' + ${ped.id} + '/modificar'}" method="post"
+                          class="acciones">
+                        <input type="number" name="cantidad" th:value="${ped.detalles[0].cantidad}"
+                               min="1" style="width:60px;"/>
+                        <button class="btn btn-sm" type="submit">Guardar</button>
+                    </form>
+                    <span th:unless="${ped.estado.name() == 'NUEVO'}"
+                          th:text="${not #lists.isEmpty(ped.detalles)} ? ${ped.detalles[0].cantidad} : ''">1</span>
+                </td>
+                <td th:text="'₡' + ${#numbers.formatInteger(ped.total, 1, 'COMMA')}">₡0</td>
+                <td th:text="${ped.estado}">NUEVO</td>
+                <td th:text="${#temporals.format(ped.createdAt, 'dd/MM/yyyy HH:mm')}">fecha</td>
+                <td>
+                    <form th:if="${ped.estado.name() == 'NUEVO'}"
+                          th:action="@{'/pedidos/' + ${ped.id} + '/eliminar'}" method="post"
+                          onsubmit="return confirm('¿Eliminar este pedido?');">
+                        <button class="btn btn-sm" type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pedidos)}">
+                <td colspan="7">No tienes pedidos aún.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>

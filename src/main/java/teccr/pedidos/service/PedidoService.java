@@ -29,11 +29,50 @@ public class PedidoService {
         this.productoService = productoService;
     }
 
-    /** Pedidos de un cliente (con sus lineas cargadas). */
     public List<Pedido> pedidosDeUsuario(Long usuarioId) {
         List<Pedido> pedidos = pedidoRepository.findByUsuarioId(usuarioId);
-        // TODO (opcional): para cada pedido, cargar sus detalles con detalleRepository.
+        for (Pedido p : pedidos) {
+            p.setDetalles(detalleRepository.findByPedidoId(p.getId()));
+        }
         return pedidos;
+    }
+
+    /** Cambia la cantidad de un pedido (solo si esta en estado NUEVO) y ajusta stock y total. */
+    public boolean modificarCantidad(Long pedidoId, Long usuarioId, int nuevaCantidad) {
+        Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
+        if (pedido == null || !pedido.getUsuarioId().equals(usuarioId)) return false;
+        if (pedido.getEstado() != Pedido.Estado.NUEVO) {
+            throw new IllegalStateException("Solo se pueden modificar pedidos en estado NUEVO");
+        }
+        if (nuevaCantidad < 1) nuevaCantidad = 1;
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (DetallePedido d : detalleRepository.findByPedidoId(pedidoId)) {
+            int diferencia = nuevaCantidad - d.getCantidad();
+            if (diferencia > 0) productoService.descontarStock(d.getProductoId(), diferencia);
+            else if (diferencia < 0) productoService.aumentarStock(d.getProductoId(), -diferencia);
+
+            d.setCantidad(nuevaCantidad);
+            d.setSubtotal(d.getPrecioUnitario().multiply(BigDecimal.valueOf(nuevaCantidad)));
+            detalleRepository.save(d);
+            total = total.add(d.getSubtotal());
+        }
+        pedido.setTotal(total);
+        pedidoRepository.save(pedido);
+        return true;
+    }
+
+    /** Elimina un pedido del usuario y devuelve el stock. */
+    public boolean eliminarPedido(Long pedidoId, Long usuarioId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId).orElse(null);
+        if (pedido == null || !pedido.getUsuarioId().equals(usuarioId)) return false;
+
+        for (DetallePedido d : detalleRepository.findByPedidoId(pedidoId)) {
+            productoService.aumentarStock(d.getProductoId(), d.getCantidad());
+            detalleRepository.deleteById(d.getId());
+        }
+        pedidoRepository.deleteById(pedidoId);
+        return true;
     }
 
     /** Todos los pedidos (vista de administrador). */

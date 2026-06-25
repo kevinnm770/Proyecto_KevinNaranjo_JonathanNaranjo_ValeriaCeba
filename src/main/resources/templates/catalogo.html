@@ -42,7 +42,7 @@
 <div class="catalogo">
 
     <header class="barra-superior">
-        <h1>Novedades</h1>
+        <h1>Nuestros productos</h1>
     </header>
 
     <div class="grid">
@@ -56,8 +56,11 @@
             <p class="card-stock" th:if="${p.stock > 0}">✔ En stock</p>
             <p class="card-stock agotado" th:unless="${p.stock > 0}">Agotado</p>
             <p class="card-precio" th:text="'₡' + ${#numbers.formatInteger(p.precio, 1, 'COMMA')}">₡0</p>
-            <form th:action="@{/pedidos}" method="post">
+            <form th:action="@{/pedidos}" method="post"
+                  style="display:flex; gap:6px; justify-content:center; align-items:center;">
                 <input type="hidden" name="productoId" th:value="${p.id}"/>
+                <input type="number" name="cantidad" value="1" min="1" th:max="${p.stock}"
+                       style="width:60px;" th:disabled="${p.stock <= 0}"/>
                 <button class="btn" type="submit" th:disabled="${p.stock <= 0}">Pedir</button>
             </form>
         </div>

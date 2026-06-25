@@ -105,4 +105,12 @@ public class ProductoService {
         producto.setStock(producto.getStock() - cantidad);
         productoRepository.save(producto);
     }
+
+    /** Devuelve unidades al inventario (al cancelar o reducir un pedido). */
+    public void aumentarStock(Long productoId, int cantidad) {
+        productoRepository.findById(productoId).ifPresent(p -> {
+            p.setStock(p.getStock() + cantidad);
+            productoRepository.save(p);
+        });
+    }
 }

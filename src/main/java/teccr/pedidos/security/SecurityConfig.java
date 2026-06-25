@@ -36,9 +36,17 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/login")             // nuestra pagina de login (Thymeleaf)
-                .defaultSuccessUrl("/catalogo", true)
-                .permitAll()
+                    .loginPage("/login")
+                    .successHandler((request, response, authentication) -> {
+                        boolean esAdmin = authentication.getAuthorities().stream()
+                                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                        if (esAdmin) {
+                            response.sendRedirect("/admin/productos");   // admin -> inventario
+                        } else {
+                            response.sendRedirect("/catalogo");          // cliente -> catalogo
+                        }
+                    })
+                    .permitAll()
             )
             .logout(logout -> logout
                 .logoutSuccessUrl("/?logout")
