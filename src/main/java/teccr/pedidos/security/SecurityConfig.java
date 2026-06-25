@@ -25,7 +25,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 // Recursos publicos (cualquiera los ve, sin iniciar sesion)
-                .requestMatchers("/", "/login", "/registro", "/css/**", "/images/**").permitAll()
+                .requestMatchers("/", "/login", "/registro", "/css/**", "/images/**", "/uploads/**").permitAll()
                 // El API REST queda abierto (la especificacion lo permite)
                 .requestMatchers("/api/**").permitAll()
                 // Solo el ADMIN entra a la zona de administracion

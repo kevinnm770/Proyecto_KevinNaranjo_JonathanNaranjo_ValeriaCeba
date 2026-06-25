@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS categorias (
 CREATE TABLE IF NOT EXISTS productos (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     nombre       VARCHAR(150)  NOT NULL,
+    img_src      VARCHAR(500),
     descripcion  TEXT,
     precio       DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     stock        INT           NOT NULL DEFAULT 0,   -- inventario disponible

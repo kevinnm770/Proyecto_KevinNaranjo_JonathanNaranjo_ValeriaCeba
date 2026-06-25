@@ -2,44 +2,68 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Catalogo</title>
+    <title>Catálogo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .catalogo { max-width:1200px; margin:24px auto; padding:0 16px; }
+        .barra-superior { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
+        .card { background:#fff; border:1px solid #eee; border-radius:10px; padding:16px;
+            text-align:center; box-shadow:0 1px 5px rgba(0,0,0,.06); display:flex; flex-direction:column; }
+        .card-img { height:200px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+        .card-img img { max-width:100%; max-height:100%; object-fit:contain; }
+        .sin-img { color:#bbb; font-size:13px; }
+        .card-nombre { font-size:15px; font-weight:bold; text-transform:uppercase; color:#222;
+            margin:0 0 8px; min-height:38px; }
+        .card-cat { color:#888; font-size:13px; margin:0 0 8px; }
+        .card-stock { color:#1b7e3c; font-size:13px; margin:0 0 8px; }
+        .card-stock.agotado { color:#b00020; }
+        .card-precio { color:#d11; font-weight:bold; font-size:18px; margin:0 0 12px; }
+        .card form { margin-top:auto; }
+        .site-header { background:#1f3a5f; color:#fff; padding:14px 28px; display:flex;
+            justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+        .site-header .marca { font-size:24px; font-weight:bold; letter-spacing:.5px; }
+        .site-header .marca span { color:#7fb2e6; }      /* el "All" en otro color */
+        .site-header .btn { background:#294e80; }
+    </style>
 </head>
 <body>
-<div class="container">
-    <header class="topbar">
-        <h1>Catálogo de productos</h1>
-        <div>
-            <a class="btn" th:href="@{/pedidos}">Mis pedidos</a>
-            <form th:action="@{/logout}" method="post" style="display:inline">
-                <button class="btn" type="submit">Salir</button>
-            </form>
-        </div>
+<header class="site-header">
+    <div class="marca">Tecno<span>All</span></div>
+    <nav style="display:flex; gap:8px; align-items:center;">
+        <a class="btn" th:href="@{/catalogo}">Catálogo</a>
+        <a class="btn" th:href="@{/pedidos}">Mis pedidos</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button class="btn" type="submit">Salir</button>
+        </form>
+    </nav>
+</header>
+<div class="catalogo">
+
+    <header class="barra-superior">
+        <h1>Novedades</h1>
     </header>
 
-    <table class="tabla">
-        <thead>
-            <tr><th>Producto</th><th>Descripcion</th><th>Precio</th><th>Stock</th><th></th></tr>
-        </thead>
-        <tbody>
-            <tr th:each="p : ${productos}">
-                <td th:text="${p.nombre}">Nombre</td>
-                <td th:text="${p.descripcion}">Descripcion</td>
-                <td th:text="'$' + ${p.precio}">$0</td>
-                <td th:text="${p.stock}">0</td>
-                <td>
-                    <!-- TODO: este boton debe agregar el producto a un pedido -->
-                    <form th:action="@{/pedidos}" method="post" style="display:inline">
-                        <input type="hidden" name="productoId" th:value="${p.id}"/>
-                        <button class="btn" type="submit">Pedir</button>
-                    </form>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(productos)}">
-                <td colspan="5">No hay productos en el catálogo.</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="grid">
+        <div class="card" th:each="p : ${productos}">
+            <div class="card-img">
+                <img th:if="${p.imgSrc}" th:src="${p.imgSrc}" th:alt="${p.nombre}"/>
+                <span th:unless="${p.imgSrc}" class="sin-img">Sin imagen</span>
+            </div>
+            <h3 class="card-nombre" th:text="${p.nombre}">NOMBRE</h3>
+            <p class="card-cat" th:text="${categoriasMap.get(p.categoriaId)} ?: 'Sin categoría'">Categoría</p>
+            <p class="card-stock" th:if="${p.stock > 0}">✔ En stock</p>
+            <p class="card-stock agotado" th:unless="${p.stock > 0}">Agotado</p>
+            <p class="card-precio" th:text="'₡' + ${#numbers.formatInteger(p.precio, 1, 'COMMA')}">₡0</p>
+            <form th:action="@{/pedidos}" method="post">
+                <input type="hidden" name="productoId" th:value="${p.id}"/>
+                <button class="btn" type="submit" th:disabled="${p.stock <= 0}">Pedir</button>
+            </form>
+        </div>
+
+        <p th:if="${#lists.isEmpty(productos)}">No hay productos disponibles.</p>
+    </div>
 </div>
 </body>
 </html>

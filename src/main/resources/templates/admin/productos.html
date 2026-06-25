@@ -3,27 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin - Inventario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .barra-superior { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .tabla-wrap { overflow-x:auto; }                 /* scroll horizontal: la tabla no se desborda */
+        .acciones { display:flex; gap:6px; flex-wrap:wrap; }
+        .btn-sm { padding:6px 10px; font-size:13px; }
+        .miniatura { width:50px; height:50px; object-fit:cover; border-radius:6px; }
+
+        /* Modal (ventana emergente) */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+            z-index:1000; justify-content:center; align-items:flex-start;
+            padding:40px 16px; overflow:auto; }
+        .modal-box { background:#fff; border-radius:10px; padding:24px; width:100%; max-width:420px;
+            box-shadow:0 8px 30px rgba(0,0,0,.25); }
+        .modal-box h2 { margin:0 0 12px; color:#1f3a5f; }
+        .cerrar-x { float:right; cursor:pointer; font-size:24px; color:#888; line-height:1; }
+
+        /* Campos verticales con título arriba */
+        .campo { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+        .campo > span { font-weight:bold; font-size:13px; color:#333; }
+        .campo input, .campo select, .campo textarea {
+            padding:8px; border:1px solid #ccc; border-radius:6px; font-size:14px; width:100%; }
+        .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+    </style>
 </head>
 <body>
 <div class="container">
-    <header class="topbar">
+
+    <header class="barra-superior">
         <h1>Inventario (Administrador)</h1>
-        <a class="btn" th:href="@{/admin/pedidos}">Ver pedidos</a>
+        <div class="acciones">
+            <button class="btn" type="button" onclick="abrir('modal-agregar')">+ Agregar producto</button>
+            <a class="btn" th:href="@{/admin/pedidos}">Ver pedidos</a>
+            <a class="btn" th:href="@{/admin/categorias}">Categorías</a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <button class="btn" type="submit">Salir</button>
+            </form>
+        </div>
     </header>
-    <!-- TODO: agregar formulario para crear producto nuevo y botones de editar -->
-    <table class="tabla">
-        <thead><tr><th>Id</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Activo</th></tr></thead>
-        <tbody>
+
+    <!-- TABLA: solo Id, Imagen, Nombre, Activo, Acciones -->
+    <div class="tabla-wrap">
+        <table class="tabla">
+            <thead>
+            <tr><th>Id</th><th>Imagen</th><th>Nombre</th><th>Activo</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
             <tr th:each="p : ${productos}">
                 <td th:text="${p.id}">1</td>
+                <td>
+                    <img th:if="${p.imgSrc}" th:src="${p.imgSrc}" alt="img" class="miniatura"/>
+                    <span th:unless="${p.imgSrc}" style="color:#aaa;">—</span>
+                </td>
                 <td th:text="${p.nombre}">Nombre</td>
-                <td th:text="'$' + ${p.precio}">$0</td>
-                <td th:text="${p.stock}">0</td>
                 <td th:text="${p.activo}">true</td>
+                <td>
+                    <div class="acciones">
+                        <button class="btn btn-sm" type="button"
+                                th:onclick="|abrir('modal-editar-${p.id}')|">Editar</button>
+                        <form th:action="@{'/admin/productos/' + ${p.id} + '/estado'}" method="post">
+                            <button class="btn btn-sm" type="submit"
+                                    th:text="${p.activo} ? 'Desactivar' : 'Activar'">Desactivar</button>
+                        </form>
+                        <form th:action="@{'/admin/productos/' + ${p.id} + '/eliminar'}" method="post"
+                              onsubmit="return confirm('¿Seguro que quieres eliminar este producto?');">
+                            <button class="btn btn-sm" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
             </tr>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- ===== MODAL: AGREGAR PRODUCTO ===== -->
+<div class="modal-overlay" id="modal-agregar">
+    <div class="modal-box">
+        <span class="cerrar-x" onclick="cerrar('modal-agregar')">&times;</span>
+        <h2>Agregar producto</h2>
+        <form th:action="@{/admin/productos}" method="post" enctype="multipart/form-data">
+            <label class="campo"><span>Nombre</span>
+                <input type="text" name="nombre" required/></label>
+            <label class="campo"><span>Descripción</span>
+                <input type="text" name="descripcion"/></label>
+            <label class="campo"><span>Precio</span>
+                <input type="number" name="precio" step="0.01" min="0" required/></label>
+            <label class="campo"><span>Stock</span>
+                <input type="number" name="stock" min="0" required/></label>
+            <label class="campo"><span>Categoría</span>
+                <select name="categoriaId">
+                    <option value="">Seleccione...</option>
+                    <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                </select></label>
+            <label class="campo"><span>Imagen</span>
+                <input type="file" name="imagen" accept="image/*"/></label>
+            <div class="modal-actions">
+                <button class="btn" type="button" onclick="cerrar('modal-agregar')">Cancelar</button>
+                <button class="btn" type="submit">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== MODALES: EDITAR (uno por producto) ===== -->
+<div th:each="p : ${productos}" class="modal-overlay" th:id="|modal-editar-${p.id}|">
+    <div class="modal-box">
+        <span class="cerrar-x" th:onclick="|cerrar('modal-editar-${p.id}')|">&times;</span>
+        <h2>Editar producto</h2>
+        <form th:action="@{'/admin/productos/' + ${p.id} + '/editar'}" method="post" enctype="multipart/form-data">
+            <label class="campo"><span>Nombre</span>
+                <input type="text" name="nombre" th:value="${p.nombre}" required/>
+            </label>
+            <label class="campo"><span>Descripción</span>
+                <input type="text" name="descripcion" th:value="${p.descripcion}"/>
+            </label>
+            <label class="campo"><span>Precio</span>
+                <input type="number" name="precio" th:value="${p.precio}" step="0.01" min="0" required/>
+            </label>
+            <label class="campo"><span>Stock</span>
+                <input type="number" name="stock" th:value="${p.stock}" min="0" required/>
+            </label>
+            <label class="campo"><span>Categoría</span>
+                <select name="categoriaId">
+                    <option value="" th:selected="${p.categoriaId == null}">Sin categoría</option>
+                    <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"
+                            th:selected="${cat.id == p.categoriaId}"></option>
+                </select>
+            </label>
+            <label class="campo"><span>Imagen (dejar vacío para conservar la actual)</span>
+                <img th:if="${p.imgSrc}" th:src="${p.imgSrc}" alt="img" class="miniatura" style="margin-bottom:6px;"/>
+                <input type="file" name="imagen" accept="image/*"/>
+                <label th:if="${p.imgSrc}" style="font-weight:normal; font-size:13px; margin-top:6px;">
+                    <input type="checkbox" name="quitarImagen" value="true"/> Quitar imagen actual
+                </label>
+            </label>
+            <div class="modal-actions">
+                <button class="btn" type="button" th:onclick="|cerrar('modal-editar-${p.id}')|">Cancelar</button>
+                <button class="btn" type="submit">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrir(id) { document.getElementById(id).style.display = 'flex'; }
+    function cerrar(id) { document.getElementById(id).style.display = 'none'; }
+</script>
 </body>
 </html>

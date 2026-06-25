@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Categorías</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .barra-superior { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .tabla-wrap { overflow-x:auto; }
+        .acciones { display:flex; gap:6px; flex-wrap:wrap; }
+        .btn-sm { padding:6px 10px; font-size:13px; }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+            z-index:1000; justify-content:center; align-items:flex-start; padding:40px 16px; overflow:auto; }
+        .modal-box { background:#fff; border-radius:10px; padding:24px; width:100%; max-width:420px;
+            box-shadow:0 8px 30px rgba(0,0,0,.25); }
+        .modal-box h2 { margin:0 0 12px; color:#1f3a5f; }
+        .cerrar-x { float:right; cursor:pointer; font-size:24px; color:#888; line-height:1; }
+        .campo { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+        .campo > span { font-weight:bold; font-size:13px; color:#333; }
+        .campo input, .campo textarea { padding:8px; border:1px solid #ccc; border-radius:6px; font-size:14px; width:100%; }
+        .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header class="barra-superior">
+        <h1>Categorías (Administrador)</h1>
+        <div class="acciones">
+            <button class="btn" type="button" onclick="abrir('modal-agregar')">+ Agregar categoría</button>
+            <a class="btn" th:href="@{/admin/productos}">Ver productos</a>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <button class="btn" type="submit">Salir</button>
+            </form>
+        </div>
+    </header>
+
+    <div class="tabla-wrap">
+        <table class="tabla">
+            <thead>
+            <tr><th>Id</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="cat : ${categorias}">
+                <td th:text="${cat.id}">1</td>
+                <td th:text="${cat.nombre}">Nombre</td>
+                <td th:text="${cat.descripcion}">Descripcion</td>
+                <td>
+                    <div class="acciones">
+                        <button class="btn btn-sm" type="button"
+                                th:onclick="|abrir('modal-editar-${cat.id}')|">Editar</button>
+                        <form th:action="@{'/admin/categorias/' + ${cat.id} + '/eliminar'}" method="post"
+                              onsubmit="return confirm('¿Seguro que quieres eliminar esta categoría?');">
+                            <button class="btn btn-sm" type="submit">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL: AGREGAR -->
+<div class="modal-overlay" id="modal-agregar">
+    <div class="modal-box">
+        <span class="cerrar-x" onclick="cerrar('modal-agregar')">&times;</span>
+        <h2>Agregar categoría</h2>
+        <form th:action="@{/admin/categorias}" method="post">
+            <label class="campo"><span>Nombre</span>
+                <input type="text" name="nombre" required/></label>
+            <label class="campo"><span>Descripción</span>
+                <input type="text" name="descripcion"/></label>
+            <div class="modal-actions">
+                <button class="btn" type="button" onclick="cerrar('modal-agregar')">Cancelar</button>
+                <button class="btn" type="submit">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODALES: EDITAR (uno por categoría) -->
+<div th:each="cat : ${categorias}" class="modal-overlay" th:id="|modal-editar-${cat.id}|">
+    <div class="modal-box">
+        <span class="cerrar-x" th:onclick="|cerrar('modal-editar-${cat.id}')|">&times;</span>
+        <h2>Editar categoría</h2>
+        <form th:action="@{'/admin/categorias/' + ${cat.id} + '/editar'}" method="post">
+            <label class="campo"><span>Nombre</span>
+                <input type="text" name="nombre" th:value="${cat.nombre}" required/></label>
+            <label class="campo"><span>Descripción</span>
+                <input type="text" name="descripcion" th:value="${cat.descripcion}"/></label>
+            <div class="modal-actions">
+                <button class="btn" type="button" th:onclick="|cerrar('modal-editar-${cat.id}')|">Cancelar</button>
+                <button class="btn" type="submit">Guardar cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrir(id) { document.getElementById(id).style.display = 'flex'; }
+    function cerrar(id) { document.getElementById(id).style.display = 'none'; }
+</script>
+</body>
+</html>

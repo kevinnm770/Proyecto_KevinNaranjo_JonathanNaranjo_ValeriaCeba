@@ -22,6 +22,9 @@ public class Producto {
     @Size(min = 2, message = "El nombre del producto debe tener al menos 2 caracteres")
     private String nombre;
 
+    @Column("img_src")
+    private String imgSrc;
+
     private String descripcion;
 
     @NotNull(message = "El precio es obligatorio")

@@ -38,7 +38,12 @@ public class ProductoService {
     }
 
     public Producto crear(Producto producto) {
-        // TODO: validar que el precio sea > 0 y el stock >= 0 antes de guardar.
+        if(producto.getPrecio()==null && producto.getPrecio().signum()<0){
+            throw new RuntimeException("El precio debe ser mayor o igual a 0");
+        }
+        if(producto.getStock()==null || producto.getStock()<0){
+            producto.setStock(0);
+        }
         if (producto.getActivo() == null) {
             producto.setActivo(true);
         }
@@ -46,18 +51,69 @@ public class ProductoService {
     }
 
     public Producto actualizar(Long id, Producto cambios) {
-        // TODO: actualizar solo los campos que vienen con valor (nombre, precio, stock...).
-        throw new UnsupportedOperationException("TODO: implementar actualizacion de producto");
+        Producto existente = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
+        if (cambios.getNombre() != null && !cambios.getNombre().isBlank()) {
+            existente.setNombre(cambios.getNombre());
+        }
+        if (cambios.getImgSrc() != null && !cambios.getImgSrc().isBlank()) {
+            existente.setImgSrc(cambios.getImgSrc());
+        }
+        if (cambios.getDescripcion() != null) {
+            existente.setDescripcion(cambios.getDescripcion());
+        }
+        if (cambios.getPrecio() != null) {
+            existente.setPrecio(cambios.getPrecio());
+        }
+        if (cambios.getCategoriaId() != null) {
+            existente.setCategoriaId(cambios.getCategoriaId());
+        }
+        if (cambios.getStock() != null) {
+            existente.setStock(cambios.getStock());
+        }
+        return productoRepository.save(existente);
+    }
+
+    /** Asigna o quita (si es null) la categoria de un producto. */
+    public void cambiarCategoria(Long id, Long categoriaId) {
+        productoRepository.findById(id).ifPresent(p -> {
+            p.setCategoriaId(categoriaId);
+            productoRepository.save(p);
+        });
+    }
+
+    /** Cambia la imagen de un producto. Si la ruta es null, lo deja sin imagen. */
+    public void cambiarImagen(Long id, String ruta) {
+        productoRepository.findById(id).ifPresent(p -> {
+            p.setImgSrc(ruta);
+            productoRepository.save(p);
+        });
+    }
+
+    /** Activa o desactiva un producto (cambia su estado al contrario). */
+    public void alternarActivo(Long id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
+        boolean nuevoEstado = !Boolean.TRUE.equals(producto.getActivo()); // si era true -> false, si era false/null -> true
+        producto.setActivo(nuevoEstado);
+        productoRepository.save(producto);
     }
 
     public void eliminar(Long id) {
-        // TODO: decidir si se borra de verdad o solo se marca activo = false (recomendado).
-        productoRepository.deleteById(id);
+        productoRepository.findById(id).ifPresent(producto -> {
+            productoRepository.deleteById(id);
+        });
     }
 
     /** Descuenta inventario cuando se vende un producto. */
     public void descontarStock(Long productoId, int cantidad) {
-        // TODO: verificar que haya stock suficiente y restar la cantidad. Lanzar error si no alcanza.
-        throw new UnsupportedOperationException("TODO: implementar descuento de stock");
+        Producto producto = productoRepository.findById(productoId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + productoId));
+
+        if (producto.getStock() < cantidad) {
+            throw new RuntimeException("Stock insuficiente para: " + producto.getNombre());
+        }
+        producto.setStock(producto.getStock()-cantidad);
+        productoRepository.save(producto);
     }
 }
