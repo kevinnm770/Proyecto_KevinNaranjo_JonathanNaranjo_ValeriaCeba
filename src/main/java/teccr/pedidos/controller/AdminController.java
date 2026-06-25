@@ -3,13 +3,14 @@ package teccr.pedidos.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import teccr.pedidos.data.Producto;
+import teccr.pedidos.data.Categoria;
+import teccr.pedidos.data.Pedido;
 import teccr.pedidos.service.PedidoService;
 import teccr.pedidos.service.ProductoService;
 import teccr.pedidos.service.CategoriaService;
-import org.springframework.web.multipart.MultipartFile;
 import teccr.pedidos.service.ImagenStorageService;
-import teccr.pedidos.data.Categoria;
 
 import java.math.BigDecimal;
 
@@ -23,31 +24,30 @@ public class AdminController {
     private final CategoriaService categoriaService;
     private final ImagenStorageService imagenStorageService;
 
-    public AdminController(ProductoService productoService, PedidoService pedidoService, CategoriaService categoriaService, ImagenStorageService imagenStorageService) {
+    public AdminController(ProductoService productoService, PedidoService pedidoService,
+                           CategoriaService categoriaService, ImagenStorageService imagenStorageService) {
         this.productoService = productoService;
         this.pedidoService = pedidoService;
         this.categoriaService = categoriaService;
         this.imagenStorageService = imagenStorageService;
     }
 
-    /** Panel con el inventario completo. */
     @GetMapping("/productos")
     public String gestionProductos(Model model) {
         model.addAttribute("productos", productoService.listarTodos());
         model.addAttribute("categorias", categoriaService.listarTodas());
-        return "admin/productos";   // templates/admin/productos.html
+        return "admin/productos";
     }
 
-    /** Panel con todos los pedidos para cambiarles el estado. */
     @GetMapping("/pedidos")
     public String gestionPedidos(Model model) {
         model.addAttribute("pedidos", pedidoService.listarTodos());
-        return "admin/pedidos";     // templates/admin/pedidos.html
+        return "admin/pedidos";
     }
 
-    /** Crea un producto nuevo desde el formulario del panel. */
     @PostMapping("/productos")
-    public String crearProducto(@ModelAttribute Producto producto, @RequestParam(value = "imagen", required = false) MultipartFile imagen){
+    public String crearProducto(@ModelAttribute Producto producto,
+                                @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
         String ruta = imagenStorageService.guardar(imagen);
         if (ruta != null) {
             producto.setImgSrc(ruta);
@@ -56,9 +56,15 @@ public class AdminController {
         return "redirect:/admin/productos";
     }
 
-    /**Actualiza el precio y el stock de un producto. */
     @PostMapping("/productos/{id}/editar")
-    public String editarProducto(@PathVariable Long id,@RequestParam String nombre,@RequestParam(required = false) String descripcion, @RequestParam BigDecimal precio, @RequestParam Integer stock, @RequestParam(required = false) Long categoriaId, @RequestParam(value = "imagen", required = false) MultipartFile imagen, @RequestParam(value = "quitarImagen", required = false) String quitarImagen){
+    public String editarProducto(@PathVariable Long id,
+                                 @RequestParam String nombre,
+                                 @RequestParam(required = false) String descripcion,
+                                 @RequestParam BigDecimal precio,
+                                 @RequestParam Integer stock,
+                                 @RequestParam(required = false) Long categoriaId,
+                                 @RequestParam(value = "imagen", required = false) MultipartFile imagen,
+                                 @RequestParam(value = "quitarImagen", required = false) String quitarImagen) {
         Producto cambios = new Producto();
         cambios.setNombre(nombre);
         cambios.setDescripcion(descripcion);
@@ -83,7 +89,6 @@ public class AdminController {
         return "redirect:/admin/productos";
     }
 
-    /** Activa o desactiva un producto. */
     @PostMapping("/productos/{id}/estado")
     public String alternarEstado(@PathVariable Long id) {
         productoService.alternarActivo(id);
@@ -109,7 +114,8 @@ public class AdminController {
     }
 
     @PostMapping("/categorias/{id}/editar")
-    public String editarCategoria(@PathVariable Long id, @RequestParam String nombre, @RequestParam(required = false) String descripcion) {
+    public String editarCategoria(@PathVariable Long id, @RequestParam String nombre,
+                                  @RequestParam(required = false) String descripcion) {
         Categoria cambios = new Categoria();
         cambios.setNombre(nombre);
         cambios.setDescripcion(descripcion);
@@ -121,5 +127,13 @@ public class AdminController {
     public String eliminarCategoria(@PathVariable Long id) {
         categoriaService.eliminar(id);
         return "redirect:/admin/categorias";
+    }
+
+    /** Cambia el estado de un pedido (parte de Jonathan). */
+    @PostMapping("/pedidos/estado")
+    public String cambiarEstado(@RequestParam Long pedidoId,
+                                @RequestParam String nuevoEstado) {
+        pedidoService.cambiarEstado(pedidoId, Pedido.Estado.valueOf(nuevoEstado));
+        return "redirect:/admin/pedidos";
     }
 }

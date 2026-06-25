@@ -49,6 +49,8 @@ public class SecurityConfig {
         // necesario desactivar CSRF en /api/**. Descomentar la linea siguiente si hace falta:
         // http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
 
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
+
         return http.build();
     }
 }

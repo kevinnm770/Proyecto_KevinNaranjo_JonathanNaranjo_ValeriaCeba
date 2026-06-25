@@ -7,27 +7,19 @@ import teccr.pedidos.repository.ProductoRepository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Logica de negocio relacionada con los productos del catalogo.
- * NOTA PARA EL EQUIPO: los metodos basicos ya estan listos.
- * Donde dice "TODO" hay que completar la regla de negocio.
- */
 @Service
 public class ProductoService {
 
     private final ProductoRepository productoRepository;
 
-    // Inyeccion por constructor (la forma usada en el curso)
     public ProductoService(ProductoRepository productoRepository) {
         this.productoRepository = productoRepository;
     }
 
-    /** Catalogo: solo productos activos. */
     public List<Producto> listarCatalogo() {
         return productoRepository.findByActivoTrue();
     }
 
-    /** Todos los productos (vista de administrador). */
     public Iterable<Producto> listarTodos() {
         return productoRepository.findAll();
     }
@@ -38,10 +30,10 @@ public class ProductoService {
     }
 
     public Producto crear(Producto producto) {
-        if(producto.getPrecio()==null && producto.getPrecio().signum()<0){
+        if (producto.getPrecio() == null || producto.getPrecio().signum() < 0) {
             throw new RuntimeException("El precio debe ser mayor o igual a 0");
         }
-        if(producto.getStock()==null || producto.getStock()<0){
+        if (producto.getStock() == null || producto.getStock() < 0) {
             producto.setStock(0);
         }
         if (producto.getActivo() == null) {
@@ -74,7 +66,6 @@ public class ProductoService {
         return productoRepository.save(existente);
     }
 
-    /** Asigna o quita (si es null) la categoria de un producto. */
     public void cambiarCategoria(Long id, Long categoriaId) {
         productoRepository.findById(id).ifPresent(p -> {
             p.setCategoriaId(categoriaId);
@@ -82,7 +73,6 @@ public class ProductoService {
         });
     }
 
-    /** Cambia la imagen de un producto. Si la ruta es null, lo deja sin imagen. */
     public void cambiarImagen(Long id, String ruta) {
         productoRepository.findById(id).ifPresent(p -> {
             p.setImgSrc(ruta);
@@ -90,11 +80,10 @@ public class ProductoService {
         });
     }
 
-    /** Activa o desactiva un producto (cambia su estado al contrario). */
     public void alternarActivo(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
-        boolean nuevoEstado = !Boolean.TRUE.equals(producto.getActivo()); // si era true -> false, si era false/null -> true
+        boolean nuevoEstado = !Boolean.TRUE.equals(producto.getActivo());
         producto.setActivo(nuevoEstado);
         productoRepository.save(producto);
     }
@@ -105,15 +94,15 @@ public class ProductoService {
         });
     }
 
-    /** Descuenta inventario cuando se vende un producto. */
     public void descontarStock(Long productoId, int cantidad) {
         Producto producto = productoRepository.findById(productoId)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + productoId));
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + productoId));
 
         if (producto.getStock() < cantidad) {
-            throw new RuntimeException("Stock insuficiente para: " + producto.getNombre());
+            throw new IllegalStateException("Stock insuficiente para el producto: " + producto.getNombre());
         }
-        producto.setStock(producto.getStock()-cantidad);
+
+        producto.setStock(producto.getStock() - cantidad);
         productoRepository.save(producto);
     }
 }
