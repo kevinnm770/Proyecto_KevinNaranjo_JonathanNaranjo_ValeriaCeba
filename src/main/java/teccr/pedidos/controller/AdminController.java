@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import teccr.pedidos.service.PedidoService;
 import teccr.pedidos.service.ProductoService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import teccr.pedidos.data.Pedido;
 
 /** Zona de administracion. Solo accesible para el rol ADMIN (ver SecurityConfig). */
 @Controller
@@ -32,5 +35,12 @@ public class AdminController {
     public String gestionPedidos(Model model) {
         model.addAttribute("pedidos", pedidoService.listarTodos());
         return "admin/pedidos";     // templates/admin/pedidos.html
+    }
+
+    @PostMapping("/pedidos/estado")
+    public String cambiarEstado(@RequestParam Long pedidoId,
+                                @RequestParam String nuevoEstado) {
+        pedidoService.cambiarEstado(pedidoId, Pedido.Estado.valueOf(nuevoEstado));
+        return "redirect:/admin/pedidos";
     }
 }

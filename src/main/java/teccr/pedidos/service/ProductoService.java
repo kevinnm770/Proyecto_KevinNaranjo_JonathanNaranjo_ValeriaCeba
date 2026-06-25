@@ -57,7 +57,14 @@ public class ProductoService {
 
     /** Descuenta inventario cuando se vende un producto. */
     public void descontarStock(Long productoId, int cantidad) {
-        // TODO: verificar que haya stock suficiente y restar la cantidad. Lanzar error si no alcanza.
-        throw new UnsupportedOperationException("TODO: implementar descuento de stock");
+        Producto producto = productoRepository.findById(productoId)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + productoId));
+
+        if (producto.getStock() < cantidad) {
+            throw new IllegalStateException("Stock insuficiente para el producto: " + producto.getNombre());
+        }
+
+        producto.setStock(producto.getStock() - cantidad);
+        productoRepository.save(producto);
     }
 }

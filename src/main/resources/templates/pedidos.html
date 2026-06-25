@@ -11,16 +11,26 @@
         <h1>Mis pedidos</h1>
         <a class="btn" th:href="@{/catalogo}">Volver al catalogo</a>
     </header>
-    <!-- TODO: recorrer ${pedidos} mostrando id, estado, total y fecha -->
+
     <table class="tabla">
-        <thead><tr><th># Pedido</th><th>Estado</th><th>Total</th><th>Fecha</th></tr></thead>
+        <thead>
+        <tr>
+            <th># Pedido</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Fecha</th>
+        </tr>
+        </thead>
         <tbody>
-            <tr th:each="ped : ${pedidos}">
-                <td th:text="${ped.id}">1</td>
-                <td th:text="${ped.estado}">NUEVO</td>
-                <td th:text="'$' + ${ped.total}">$0</td>
-                <td th:text="${ped.createdAt}">fecha</td>
-            </tr>
+        <tr th:each="ped : ${pedidos}">
+            <td th:text="${ped.id}">1</td>
+            <td th:text="${ped.estado}">NUEVO</td>
+            <td th:text="'$' + ${ped.total}">$0</td>
+            <td th:text="${#temporals.format(ped.createdAt, 'dd/MM/yyyy HH:mm')}">fecha</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pedidos)}">
+            <td colspan="4">No tienes pedidos aún.</td>
+        </tr>
         </tbody>
     </table>
 </div>

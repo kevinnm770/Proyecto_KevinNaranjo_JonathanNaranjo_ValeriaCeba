@@ -8,6 +8,8 @@ import teccr.pedidos.repository.PedidoRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 /**
  * Logica de negocio de los pedidos: creacion, consulta y cambio de estado.
@@ -49,23 +51,54 @@ public class PedidoService {
     }
 
     /**
-     * Crea un pedido nuevo a partir de las lineas seleccionadas.
+     * Crea un pedido nuevo
      */
+
     public Pedido crearPedido(Long usuarioId, List<DetallePedido> lineas) {
-        // TODO: 1) calcular el total sumando los subtotales
-        //       2) guardar el pedido con estado NUEVO
-        //       3) guardar cada DetallePedido con el id del pedido
-        //       4) descontar el stock de cada producto (productoService.descontarStock)
-        throw new UnsupportedOperationException("TODO: implementar creacion de pedido");
+        // 1) Calcular el total
+        BigDecimal total = lineas.stream()
+                .map(DetallePedido::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 2) Guardar el pedido
+        Pedido pedido = new Pedido();
+        pedido.setUsuarioId(usuarioId);
+        pedido.setEstado(Pedido.Estado.NUEVO);
+        pedido.setTotal(total);
+        pedido.setCreatedAt(LocalDateTime.now());
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);
+
+        // 3) Guardar cada línea con el id del pedido
+        for (DetallePedido detalle : lineas) {
+            detalle.setPedidoId(pedidoGuardado.getId());
+            detalleRepository.save(detalle);
+        }
+
+        // 4) Descontar stock
+        for (DetallePedido detalle : lineas) {
+            productoService.descontarStock(detalle.getProductoId(), detalle.getCantidad());
+        }
+
+        return pedidoGuardado;
     }
 
     /**
-     * Cambia el estado de un pedido (lo usa el administrador y el API REST).
+     * Cambia el estado de un pedido
      */
+
     public Optional<Pedido> cambiarEstado(Long pedidoId, Pedido.Estado nuevoEstado) {
-        // TODO: validar transiciones permitidas (NUEVO -> EN_PREPARACION -> ENTREGADO)
         return pedidoRepository.findById(pedidoId)
                 .map(pedido -> {
+                    boolean transicionValida =
+                            (pedido.getEstado() == Pedido.Estado.NUEVO && nuevoEstado == Pedido.Estado.EN_PREPARACION) ||
+                                    (pedido.getEstado() == Pedido.Estado.EN_PREPARACION && nuevoEstado == Pedido.Estado.ENTREGADO);
+
+                    if (!transicionValida) {
+                        throw new IllegalStateException(
+                                "Transición no permitida: " + pedido.getEstado() + " → " + nuevoEstado
+                        );
+                    }
+
                     pedido.setEstado(nuevoEstado);
                     return pedidoRepository.save(pedido);
                 });
