@@ -2,19 +2,21 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>TecnoTienda - Inicio</title>
+    <title>TecnoTienda</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
 <body>
 <div class="container">
     <h1>TecnoTienda</h1>
-    <p>Tienda de componentes electronicos y hardware.</p>
-    <p th:if="${param.logout}" class="ok">Sesion cerrada correctamente.</p>
+    <p>Bienvenido a tu tienda de componentes electrónicos y hardware.</p>
+    <p>Encontrá procesadores, tarjetas de video, memorias RAM, almacenamiento y más.</p>
+
+    <p th:if="${param.logout}" class="ok">Sesión cerrada correctamente.</p>
+
     <nav>
-        <a class="btn" th:href="@{/login}">Iniciar sesion</a>
-        <a class="btn" th:href="@{/registro}">Registrarme</a>
+        <a class="btn" th:href="@{/login}">Iniciar sesión</a>
+        <a class="btn" th:href="@{/registro}">Crear cuenta</a>
     </nav>
-    <!-- TODO: mejorar esta pagina de bienvenida -->
 </div>
 </body>
 </html>

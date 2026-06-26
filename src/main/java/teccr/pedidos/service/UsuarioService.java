@@ -29,7 +29,9 @@ public class UsuarioService {
      * Registra un nuevo CLIENTE. Cifra la contrasena antes de guardarla.
      */
     public Usuario registrarCliente(Usuario usuario) {
-        // TODO: validar que el username no exista ya (usuarioRepository.findByUsername).
+        if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("El nombre de usuario ya está en uso.");
+        }
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuario.setRol(Usuario.Rol.CLIENTE);
         usuario.setActivo(true);
