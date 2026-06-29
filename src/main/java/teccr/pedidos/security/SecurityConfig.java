@@ -53,10 +53,6 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        // TODO (opcional): para probar el API REST con Postman via POST/PATCH puede ser
-        // necesario desactivar CSRF en /api/**. Descomentar la linea siguiente si hace falta:
-        // http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
-
         http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"));
 
         return http.build();
